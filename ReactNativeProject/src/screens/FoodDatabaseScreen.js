@@ -33,8 +33,11 @@ const FoodDatabaseScreen = () => {
       const response = await fetch(url);
       const data = await response.json();
 
+      console.log(data);
+
       if (data.hints && data.hints.length > 0 && data.hints[0].food) {
         setIngredient(data.hints[0].food);
+        console.log(ingredient);
       } else {
         setIngredient(null);
       }
@@ -61,10 +64,12 @@ const FoodDatabaseScreen = () => {
             <View>
               <Text>{ingredient.label}</Text>
               <Image source={{ uri: ingredient.image }} style={{ width: 100, height: 100 }} />
+              <Text>Per 100g :</Text>
               <Text>{ingredient.nutrients.ENERC_KCAL} kcal</Text>
-              <Text>Fat : {ingredient.nutrients.FAT} g</Text>
-              <Text>Sugar : {ingredient.nutrients.SUGAR}</Text>
-              <Text>Carbohydrate : {ingredient.nutrients.CHOCDF} g</Text>
+              <Text>Fat : {Math.floor(ingredient.nutrients.FAT*100)/100} g</Text>
+              <Text>Carbohydrate : {Math.floor(ingredient.nutrients.CHOCDF*100)/100} g</Text>
+              <Text>Fiber : {Math.floor(ingredient.nutrients.FIBTG*100)/100} g</Text>
+              <Text>Protein : {Math.floor(ingredient.nutrients.PROCNT*100)/100} g</Text>
             </View>
           )}
         </View>
