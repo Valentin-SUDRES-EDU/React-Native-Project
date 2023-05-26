@@ -50,6 +50,7 @@ const FoodDatabaseScreen = () => {
   };
 
   const RoundValue = (value, places) => {
+    if (isNaN(value)) value = 0;
     return Math.floor(value * Math.pow(10, places)) / Math.pow(10, places);
   };
 
