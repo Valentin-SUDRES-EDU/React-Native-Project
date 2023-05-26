@@ -10,28 +10,42 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   Keyboard,
+  Platform,
 } from 'react-native';
 
 const App = () => {
   const [showModal, setShowModal] = useState(false);
   const [Age, setAge] = useState();
-  const [Gender = 'Male', setGender] = useState();
+  const [Gender = 'male', setGender] = useState();
   const [Height, setHeight] = useState();
   const [Weight, setWeight] = useState();
-  const [ActivityLevel = '1.2', setActivityLevel] = useState();
-  const [HealthGoal = '-500', setHealthGoal] = useState();
+  const [ActivityLevel = 'sedentary', setActivityLevel] = useState();
+  const [HealthGoal = 'weightLoss', setHealthGoal] = useState();
   const [BMR, setBMR] = useState();
   const [BMRActivityLevel, setBMRActivityLevel] = useState();
   const [BMRHealthGoal, setBMRHealthGoal] = useState();
 
   const handleFormSubmit = () => {
-    const BMR = calculateBMR();
-    const BMRActivityLevel = adjustBMRWithActivityLevel(BMR);
-    const BMRHealthGoal = adjustBMRWithHealthGoal(BMRActivityLevel);
+    console.log('Form submitted!');
+    console.log('Age:', Age);
+    console.log('Gender:', Gender);
+    console.log('Height:', Height);
+    console.log('Weight:', Weight);
+    console.log('Activity Level:', ActivityLevel);
+    console.log('Health Goal:', HealthGoal);
 
+    const BMR = calculateBMR();
     setBMR(BMR);
+
+    const BMRActivityLevel = adjustBMRWithActivityLevel(BMR);
     setBMRActivityLevel(BMRActivityLevel);
+
+    const BMRHealthGoal = adjustBMRWithHealthGoal(BMRActivityLevel);
     setBMRHealthGoal(BMRHealthGoal);
+
+    console.log('BMR:', BMR);
+    console.log('BMRActivityLevel:', BMRActivityLevel);
+    console.log('BMRHealthGoal:', BMRHealthGoal);
 
     setShowModal(true);
   };
@@ -39,10 +53,10 @@ const App = () => {
   const calculateBMR = () => {
     let BMR = 0;
 
-    if (Gender === 'Male') {
+    if (Gender === 'male') {
       // BMR = 88.362 + (13.397 * weight in kg) + (4.799 * height in cm) - (5.677 * age in years)
       BMR = 88.362 + 13.397 * Weight + 4.799 * Height - 5.677 * Age;
-    } else if (Gender === 'Female') {
+    } else if (Gender === 'female') {
       //BMR = 447.593 + (9.247 * weight in kg) + (3.098 * height in cm) - (4.330 * age in years)
       BMR = 447.593 + 9.247 * Weight + 3.098 * Height - 4.33 * Age;
     }
@@ -51,21 +65,33 @@ const App = () => {
   };
 
   const adjustBMRWithActivityLevel = (BMR) => {
-    let BMRActivityLevel = BMR;
-    BMRActivityLevel *= ActivityLevel;
+    const BMRActivityLevel = BMR;
 
-    return Math.floor(BMRActivityLevel);
+    switch (ActivityLevel) {
+      case 'sedentary':
+        return Math.floor(BMRActivityLevel * 1.2);
+      case 'light':
+        return Math.floor(BMRActivityLevel * 1.375);
+      case 'moderate':
+        return Math.floor(BMRActivityLevel * 1.55);
+      case 'heavy':
+        return Math.floor(BMRActivityLevel * 1.725);
+      case 'extra':
+        return Math.floor(BMRActivityLevel * 1.9);
+      default:
+        return Math.floor(BMRActivityLevel * 1.2);
+    }
   };
 
   const adjustBMRWithHealthGoal = (BMRActivityLevel) => {
     const BMRHealthGoal = BMRActivityLevel;
 
     switch (HealthGoal) {
-      case '-500':
+      case 'weightLoss':
         return Math.floor(BMRHealthGoal - 500);
-      case '0':
+      case 'weightMaintain':
         return BMRHealthGoal;
-      case '+500':
+      case 'weightGain':
         return Math.floor(BMRHealthGoal + 500);
       default:
         return BMRHealthGoal;
@@ -90,16 +116,14 @@ const App = () => {
           />
 
           <Text style={styles.text}>Gender</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={Gender}
-              onValueChange={(itemValue) => setGender(itemValue)}
-              style={styles.picker}
-              itemStyle={styles.pickerItem}>
-              <Picker.Item label="Homme" value="male" />
-              <Picker.Item label="Femme" value="female" />
-            </Picker>
-          </View>
+          <Picker
+            selectedValue={Gender}
+            onValueChange={(itemValue) => setGender(itemValue)}
+            style={[Platform.OS === 'ios' && styles.picker]}
+            itemStyle={[Platform.OS === 'ios' && styles.pickerItem]}>
+            <Picker.Item label="Homme" value="male" />
+            <Picker.Item label="Femme" value="female" />
+          </Picker>
 
           <Text style={styles.text}>Height</Text>
           <TextInput
@@ -120,32 +144,28 @@ const App = () => {
           />
 
           <Text style={styles.text}>Activity level</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={ActivityLevel}
-              onValueChange={(itemValue) => setActivityLevel(itemValue)}
-              style={styles.picker}
-              itemStyle={styles.pickerItem}>
-              <Picker.Item label="Sedentary" value="1.2" />
-              <Picker.Item label="Light Exercise" value="1.375" />
-              <Picker.Item label="Moderate Exercise" value="1.55" />
-              <Picker.Item label="Heavy Exercise" value="1.725" />
-              <Picker.Item label="Extra Active" value="1.9" />
-            </Picker>
-          </View>
+          <Picker
+            selectedValue={ActivityLevel}
+            onValueChange={(itemValue) => setActivityLevel(itemValue)}
+            style={[Platform.OS === 'ios' && styles.picker]}
+            itemStyle={[Platform.OS === 'ios' && styles.pickerItem]}>
+            <Picker.Item label="Sedentary" value="sedentary" />
+            <Picker.Item label="Light Exercise" value="light" />
+            <Picker.Item label="Moderate Exercise" value="moderate" />
+            <Picker.Item label="Heavy Exercise" value="heavy" />
+            <Picker.Item label="Extra Active" value="extra" />
+          </Picker>
 
           <Text style={styles.text}>Health Goal</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={HealthGoal}
-              onValueChange={(itemValue) => setHealthGoal(itemValue)}
-              style={styles.picker}
-              itemStyle={styles.pickerItem}>
-              <Picker.Item label="Weight Loss" value="-500" />
-              <Picker.Item label="Weight Maintenance" value="0" />
-              <Picker.Item label="Weight Gain" value="+500" />
-            </Picker>
-          </View>
+          <Picker
+            selectedValue={HealthGoal}
+            onValueChange={(itemValue) => setHealthGoal(itemValue)}
+            style={[Platform.OS === 'ios' && styles.picker]}
+            itemStyle={[Platform.OS === 'ios' && styles.pickerItem]}>
+            <Picker.Item label="Weight Loss" value="weightLoss" />
+            <Picker.Item label="Weight Maintenance" value="weightMaintain" />
+            <Picker.Item label="Weight Gain" value="weightGain" />
+          </Picker>
 
           <Button
             title="Submit"
@@ -177,30 +197,23 @@ const styles = StyleSheet.create({
     // alignItems: 'center',
   },
   text: {
-    marginBottom: 10,
+    marginBottom: 5,
     fontSize: 14,
   },
   input: {
     height: 40,
     borderColor: 'gray',
     borderWidth: 1,
-    marginBottom: 30,
+    marginBottom: 20,
     paddingHorizontal: 10,
   },
-  // pickerContainer: {
-  //   height: 40,
-  //   width: '100%',
-  //   borderColor: 'gray',
-  //   borderWidth: 1,
-  //   marginBottom: 10,
-  //   paddingHorizontal: 10,
-  // },
   picker: {
-    height: 125,
-    margin: 0,
+    height: 120,
+    marginBottom: 15,
+    marginTop: -10,
   },
   pickerItem: {
-    height: 125,
+    height: 120,
   },
   modalContainer: {
     flex: 1,
