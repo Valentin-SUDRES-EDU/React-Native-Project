@@ -1,88 +1,140 @@
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TextInput,
   StyleSheet,
-  TouchableWithoutFeedback,
-  Keyboard,
+  FlatList,
   Image,
+  Keyboard,
   TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const dismissKeyboard = () => {
-  Keyboard.dismiss();
-};
-
 const FoodDatabaseScreen = () => {
-  const [search, setSearch] = useState();
-  const [ingredient, setIngredient] = useState(null);
+  const [search, setSearch] = useState('');
+  const [data, setData] = useState([]);
 
   const fetchData = async () => {
+    dismissKeyboard();
     try {
       const API_ENDPOINT = 'https://api.edamam.com/api/food-database/v2/parser';
       const API_KEY = '7a6626c0cc8f1ce64be0652e414a6fda';
       const API_ID = 'a21c5bfa';
       const query = search;
 
-      console.log(query);
-
       const url = `${API_ENDPOINT}?ingr=${query}&app_id=${API_ID}&app_key=${API_KEY}`;
 
       const response = await fetch(url);
-      const data = await response.json();
+      const result = await response.json();
 
-      console.log(data);
-
-      if (data.hints && data.hints.length > 0 && data.hints[0].food) {
-        setIngredient(data.hints[0].food);
-        console.log(ingredient);
+      if (result.hints && result.hints.length > 0) {
+        setData(result.hints.map((hint) => hint.food));
       } else {
-        setIngredient(null);
+        setData([]);
       }
     } catch (error) {
       console.error(error);
     }
   };
 
+  const truncateText = (text, maxLength) => {
+    if (text.length > maxLength) {
+      return text.substring(0, maxLength) + '...';
+    }
+    return text;
+  };
+
+  const RoundValue = (value, places) => {
+    return Math.floor(value * Math.pow(10, places)) / Math.pow(10, places);
+  };
+
+  const renderFoodItem = ({ item }) => (
+    <View style={styles.itemContainer}>
+      <Text style={styles.itemContainerTitle}>{truncateText(item.label, 20)}</Text>
+      {item.image ? (
+        <Image source={{ uri: item.image }} style={styles.image} />
+      ) : (
+        <MaterialCommunityIcons
+          name="image-off-outline"
+          color="lightgrey"
+          size={100}
+          style={styles.image}
+        />
+      )}
+      <Text style={styles.itemContainerText}>
+        Per 100g: {RoundValue(item.nutrients.ENERC_KCAL, 2)} kcal
+      </Text>
+      <Text style={styles.itemContainerText}>Fat: {RoundValue(item.nutrients.FAT, 2)} g</Text>
+      <Text style={styles.itemContainerText}>Fiber: {RoundValue(item.nutrients.FIBTG, 2)} g</Text>
+      <Text style={styles.itemContainerText}>
+        Protein: {RoundValue(item.nutrients.PROCNT, 2)} g
+      </Text>
+      <Text style={styles.itemContainerText}>
+        Carbohydrate: {RoundValue(item.nutrients.CHOCDF, 2)} g
+      </Text>
+    </View>
+  );
+
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
   return (
-    <TouchableWithoutFeedback onPress={dismissKeyboard}>
-      <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <SafeAreaView>
         <Text style={styles.text}>Search your food items</Text>
-
         <View style={styles.searchBar}>
-          <TextInput onChangeText={setSearch} value={search} style={styles.input} />
-
+          <TextInput
+            onChangeText={setSearch}
+            value={search}
+            style={styles.input}
+            onSubmitEditing={fetchData}
+            placeholder="Enter a food name to get data on it"
+          />
           <TouchableOpacity style={styles.button} onPress={fetchData}>
             <MaterialCommunityIcons name="magnify" size={40} color="white" style={styles.icon} />
           </TouchableOpacity>
         </View>
 
-        <View>
-          {ingredient && (
-            <View>
-              <Text>{ingredient.label}</Text>
-              <Image source={{ uri: ingredient.image }} style={{ width: 100, height: 100 }} />
-              <Text>Per 100g :</Text>
-              <Text>{ingredient.nutrients.ENERC_KCAL} kcal</Text>
-              <Text>Fat : {Math.floor(ingredient.nutrients.FAT*100)/100} g</Text>
-              <Text>Carbohydrate : {Math.floor(ingredient.nutrients.CHOCDF*100)/100} g</Text>
-              <Text>Fiber : {Math.floor(ingredient.nutrients.FIBTG*100)/100} g</Text>
-              <Text>Protein : {Math.floor(ingredient.nutrients.PROCNT*100)/100} g</Text>
-            </View>
-          )}
-        </View>
-      </View>
-    </TouchableWithoutFeedback>
+        <ScrollView>
+          <FlatList
+            data={data}
+            renderItem={renderFoodItem}
+            keyExtractor={(item) => item.foodId}
+            numColumns={2}
+            contentContainerStyle={styles.listContainer}
+          />
+        </ScrollView>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    alignItems: 'center',
+    alignSelf: 'center',
   },
-
+  text: {
+    width: '100%',
+    marginTop: 20,
+    textAlign: 'center',
+    fontSize: 30,
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  searchBar: {
+    display: 'flex',
+    flexDirection: 'row',
+  },
   input: {
     height: 40,
     margin: 20,
@@ -96,30 +148,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
   },
-
-  text: {
-    width: '100%',
-    margin: 20,
-    textAlign: 'center',
-    fontSize: 30,
-    alignItems: 'center',
-    alignSelf: 'center',
-  },
-
-  searchBar: {
-    display: 'flex',
+  button: {
     flexDirection: 'row',
-  },
-
-  icon: {
-  },
-
-  button:{
-    flexDirection: 'row', 
     alignSelf: 'center',
-    borderRadius : 50,
+    borderRadius: 50,
     backgroundColor: '#424B54',
-  }
+  },
+
+  listContainer: {
+    justifyContent: 'space-between',
+  },
+
+  itemContainer: {
+    flex: 1,
+    padding: 10,
+    borderWidth: 1,
+    borderRadius: 20,
+    borderColor: '#424B54',
+    cursorColor: 'black',
+    backgroundColor: 'white',
+    margin: 5,
+  },
+
+  itemContainerTitle: {
+    alignSelf: 'center',
+    marginBottom: 10,
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+
+  itemContainerText: {
+    alignSelf: 'center',
+    marginBottom: 2,
+    fontSize: 12,
+  },
+
+  image: {
+    alignSelf: 'center',
+    width: 100,
+    height: 100,
+    marginBottom: 10,
+  },
 });
 
 export default FoodDatabaseScreen;

@@ -13,7 +13,7 @@ import {
   Platform,
 } from 'react-native';
 
-const App = () => {
+const HealthGoalsScreen = () => {
   const [showModal, setShowModal] = useState(false);
   const [Age, setAge] = useState();
   const [Gender = 'male', setGender] = useState();
@@ -103,7 +103,7 @@ const App = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView>
       <TouchableWithoutFeedback onPress={dismissKeyboard}>
         <View style={styles.container}>
           <Text style={styles.text}>Age</Text>
@@ -239,4 +239,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+export default HealthGoalsScreen;
