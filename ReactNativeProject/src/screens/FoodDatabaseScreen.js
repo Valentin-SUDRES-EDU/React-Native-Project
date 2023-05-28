@@ -14,15 +14,23 @@ import {
   SafeAreaView,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { v4 as uuidv4 } from 'uuid';
 
 const FoodDatabaseScreen = () => {
   const [search, setSearch] = useState('');
   const [data, setData] = useState([]);
+  const [nextPageUrl, setNextPageUrl] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [nutritionData, setNutritionData] = useState(null);
   const [selectedIngredients, setSelectedIngredients] = useState([]);
 
+  const generateUniqueId = () => {
+    return uuidv4();
+  };
+
   const fetchData = async () => {
+    setData([]);
+    setNextPageUrl();
     dismissKeyboard();
     try {
       const API_ENDPOINT = 'https://api.edamam.com/api/food-database/v2/parser';
@@ -36,12 +44,36 @@ const FoodDatabaseScreen = () => {
       const result = await response.json();
 
       if (result.hints && result.hints.length > 0) {
-        setData(result.hints.map((hint) => hint.food));
+        setData(result.hints.map((hint) => ({ ...hint.food, id: generateUniqueId() })));
+        if (result._links && result._links.next) setNextPageUrl(result._links.next?.href || null);
       } else {
         setData([]);
+        setNextPageUrl(null);
       }
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleEndReached = async () => {
+    if (nextPageUrl) {
+      try {
+        const response = await fetch(nextPageUrl);
+        const result = await response.json();
+
+        if (result.hints && result.hints.length > 0) {
+          setData((prevData) => [
+            ...prevData,
+            ...result.hints.map((hint) => ({ ...hint.food, id: generateUniqueId() })),
+          ]);
+          if (result._links && result._links.next) setNextPageUrl(result._links.next?.href || null);
+        } else {
+          setData([]);
+          setNextPageUrl(null);
+        }
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
@@ -108,21 +140,13 @@ const FoodDatabaseScreen = () => {
       <Text style={styles.itemContainerText}>
         Per 100g: {RoundValue(item.nutrients.ENERC_KCAL, 2)} kcal
       </Text>
-      {/* <Text style={styles.itemContainerText}>Fat: {RoundValue(item.nutrients.FAT, 2)} g</Text>
-      <Text style={styles.itemContainerText}>Fiber: {RoundValue(item.nutrients.FIBTG, 2)} g</Text>
-      <Text style={styles.itemContainerText}>
-        Protein: {RoundValue(item.nutrients.PROCNT, 2)} g
-      </Text>
-      <Text style={styles.itemContainerText}>
-        Carbohydrate: {RoundValue(item.nutrients.CHOCDF, 2)} g
-      </Text> */}
     </TouchableOpacity>
   );
 
   const Table = ({ nutritionData }) => {
     const renderTableRow = (label, quantity, unit) => {
       return (
-        <View style={styles.tableRow}>
+        <View key={label} style={styles.tableRow}>
           <Text style={styles.tableDataLeft}>{label}</Text>
           <Text style={styles.tableDataRight}>{RoundValue(quantity, 2) + ' ' + unit}</Text>
         </View>
@@ -175,15 +199,15 @@ const FoodDatabaseScreen = () => {
         )}
 
         {!selectedItem && !nutritionData && (
-          <ScrollView>
-            <FlatList
-              data={data}
-              renderItem={renderFoodItem}
-              keyExtractor={(item) => item.foodId}
-              numColumns={2}
-              contentContainerStyle={styles.listContainer}
-            />
-          </ScrollView>
+          <FlatList
+            data={data}
+            renderItem={renderFoodItem}
+            keyExtractor={(item) => item.id}
+            numColumns={2}
+            contentContainerStyle={styles.listContainer}
+            onEndReached={handleEndReached}
+            onEndReachedThreshold={0.5}
+          />
         )}
 
         {selectedItem && nutritionData && (
