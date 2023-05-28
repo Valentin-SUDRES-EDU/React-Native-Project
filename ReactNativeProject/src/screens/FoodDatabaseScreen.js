@@ -99,6 +99,7 @@ const FoodDatabaseScreen = () => {
         setAutoCompleteData(result);
       } else {
         setAutoCompleteData([]);
+        setShowAutoComplete(false);
       }
     } catch (error) {
       console.error(error);
@@ -234,7 +235,12 @@ const FoodDatabaseScreen = () => {
                 }}
                 placeholder="Enter a food name to get data on it"
               />
-              <TouchableOpacity style={styles.button} onPress={() => fetchData('')}>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => {
+                  fetchData('');
+                  setShowAutoComplete(false);
+                }}>
                 <MaterialCommunityIcons
                   name="magnify"
                   size={40}
