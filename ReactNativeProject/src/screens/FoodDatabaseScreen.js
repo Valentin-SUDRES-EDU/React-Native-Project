@@ -19,24 +19,28 @@ import { v4 as uuidv4 } from 'uuid';
 const FoodDatabaseScreen = () => {
   const [search, setSearch] = useState('');
   const [data, setData] = useState([]);
+  const [isNoResults, setIsNoResults] = useState(false);
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [nutritionData, setNutritionData] = useState(null);
   const [selectedIngredients, setSelectedIngredients] = useState([]);
+  const [autoCompleteData, setAutoCompleteData] = useState([]);
+  const [showAutoComplete, setShowAutoComplete] = useState(true);
 
   const generateUniqueId = () => {
     return uuidv4();
   };
 
-  const fetchData = async () => {
+  const fetchData = async (selectedAutoCompleteItem = '') => {
     setData([]);
     setNextPageUrl();
     dismissKeyboard();
+    setShowAutoComplete(false);
     try {
       const API_ENDPOINT = 'https://api.edamam.com/api/food-database/v2/parser';
       const API_KEY = '7a6626c0cc8f1ce64be0652e414a6fda';
       const API_ID = 'a21c5bfa';
-      const query = search;
+      const query = selectedAutoCompleteItem !== '' ? selectedAutoCompleteItem : search;
 
       const url = `${API_ENDPOINT}?ingr=${query}&app_id=${API_ID}&app_key=${API_KEY}`;
 
@@ -44,11 +48,13 @@ const FoodDatabaseScreen = () => {
       const result = await response.json();
 
       if (result.hints && result.hints.length > 0) {
+        setIsNoResults(false);
         setData(result.hints.map((hint) => ({ ...hint.food, id: generateUniqueId() })));
         if (result._links && result._links.next) setNextPageUrl(result._links.next?.href || null);
       } else {
         setData([]);
         setNextPageUrl(null);
+        setIsNoResults(true);
       }
     } catch (error) {
       console.error(error);
@@ -75,6 +81,45 @@ const FoodDatabaseScreen = () => {
         console.error(error);
       }
     }
+  };
+
+  const fetchAutoCompleteData = async (text) => {
+    try {
+      const API_ENDPOINT = 'https://api.edamam.com/auto-complete';
+      const API_KEY = '7a6626c0cc8f1ce64be0652e414a6fda';
+      const API_ID = 'a21c5bfa';
+      const search = text;
+
+      const url = `${API_ENDPOINT}?q=${search}&limit=10&app_id=${API_ID}&app_key=${API_KEY}`;
+
+      const response = await fetch(url);
+      const result = await response.json();
+
+      if (result) {
+        setAutoCompleteData(result);
+      } else {
+        setAutoCompleteData([]);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleAutoComplete = (text) => {
+    setSearch(text);
+    if (text.length >= 2) {
+      fetchAutoCompleteData(text);
+      setShowAutoComplete(true);
+    } else {
+      setAutoCompleteData([]);
+      setShowAutoComplete(false);
+    }
+  };
+
+  const handleAutoCompleteSelection = (selectedItem) => {
+    setSearch(selectedItem);
+    fetchData(selectedItem);
+    setShowAutoComplete(false);
   };
 
   const fetchNutritionInfo = async (selectedItem) => {
@@ -180,13 +225,16 @@ const FoodDatabaseScreen = () => {
             <Text style={styles.text}>Search your food items</Text>
             <View style={styles.searchBar}>
               <TextInput
-                onChangeText={setSearch}
+                onChangeText={handleAutoComplete}
                 value={search}
                 style={styles.input}
-                onSubmitEditing={fetchData}
+                onSubmitEditing={() => {
+                  fetchData('');
+                  setShowAutoComplete(false);
+                }}
                 placeholder="Enter a food name to get data on it"
               />
-              <TouchableOpacity style={styles.button} onPress={fetchData}>
+              <TouchableOpacity style={styles.button} onPress={() => fetchData('')}>
                 <MaterialCommunityIcons
                   name="magnify"
                   size={40}
@@ -195,8 +243,24 @@ const FoodDatabaseScreen = () => {
                 />
               </TouchableOpacity>
             </View>
+
+            {showAutoComplete && (
+              <FlatList
+                data={autoCompleteData}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.autoCompleteItem}
+                    onPress={() => handleAutoCompleteSelection(item)}>
+                    <Text>{item}</Text>
+                  </TouchableOpacity>
+                )}
+                keyExtractor={(item) => item}
+              />
+            )}
           </View>
         )}
+
+        {isNoResults && !showAutoComplete && <Text>Aucun element trouve</Text>}
 
         {!selectedItem && !nutritionData && (
           <FlatList
@@ -209,6 +273,10 @@ const FoodDatabaseScreen = () => {
             onEndReachedThreshold={0.5}
           />
         )}
+
+        {/* {!selectedItem && !nutritionData && search !== '' && (
+          <Text>Aucun élément trouvé</Text>
+        )} */}
 
         {selectedItem && nutritionData && (
           <ScrollView>
@@ -284,6 +352,11 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: 50,
     backgroundColor: '#424B54',
+  },
+  autoCompleteItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'gray',
   },
 
   listContainer: {
