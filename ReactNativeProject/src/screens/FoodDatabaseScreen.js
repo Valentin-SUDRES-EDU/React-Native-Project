@@ -260,7 +260,7 @@ const FoodDatabaseScreen = () => {
           </View>
         )}
 
-        {isNoResults && !showAutoComplete && <Text>Aucun element trouve</Text>}
+        {isNoResults && !showAutoComplete && <Text>Aucun élément trouvé</Text>}
 
         {!selectedItem && !nutritionData && (
           <FlatList
@@ -273,10 +273,6 @@ const FoodDatabaseScreen = () => {
             onEndReachedThreshold={0.5}
           />
         )}
-
-        {/* {!selectedItem && !nutritionData && search !== '' && (
-          <Text>Aucun élément trouvé</Text>
-        )} */}
 
         {selectedItem && nutritionData && (
           <ScrollView>
