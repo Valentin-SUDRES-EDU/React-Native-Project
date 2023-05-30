@@ -12,10 +12,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
+  Modal,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { v4 as uuidv4 } from 'uuid';
 
+import MealSelectionModal from '../components/MealSelectionModal.js';
 import {
   useSelectedIngredients,
   useSelectedIngredientsDispatch,
@@ -27,11 +29,13 @@ const FoodDatabaseScreen = () => {
   const [isNoResults, setIsNoResults] = useState(false);
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedMeals, setSelectedMeals] = useState(new Map());
   const [nutritionData, setNutritionData] = useState(null);
   const selectedIngredients = useSelectedIngredients();
   const setSelectedIngredients = useSelectedIngredientsDispatch();
   const [autoCompleteData, setAutoCompleteData] = useState([]);
   const [showAutoComplete, setShowAutoComplete] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const generateUniqueId = () => {
     return uuidv4();
@@ -175,6 +179,21 @@ const FoodDatabaseScreen = () => {
     return selectedIngredients.some((selectedItem) => selectedItem.item.id === item.id);
   };
 
+  const handleMealSelection = (day, meals) => {
+    if (selectedMeals) {
+      if (!selectedMeals) setSelectedMeals(new Map());
+      selectedMeals.set(day, meals);
+    }
+  };
+
+  const openModal = () => {
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
+
   const renderFoodItem = ({ item }) => (
     <TouchableOpacity
       style={[styles.itemContainer, item === selectedItem && styles.selectedItemContainer]}
@@ -312,14 +331,13 @@ const FoodDatabaseScreen = () => {
                     if (isItemSelected(selectedItem)) {
                       setSelectedIngredients({ type: 'deleted', item: selectedItem });
                     } else {
-                      setSelectedIngredients({ type: 'added', item: selectedItem, nutritionData });
+                      openModal();
                     }
                   }}>
                   <Text style={styles.buttonText}>
                     {isItemSelected(selectedItem) ? 'Supprimer de la liste' : 'Ajouter à la liste'}
                   </Text>
                 </TouchableOpacity>
-
                 <TouchableOpacity
                   style={styles.closeButton}
                   onPress={() => {
@@ -328,6 +346,25 @@ const FoodDatabaseScreen = () => {
                   }}>
                   <Text style={styles.buttonText}>Close</Text>
                 </TouchableOpacity>
+                <Modal
+                  visible={modalVisible}
+                  animationType="slide"
+                  transparent
+                  onRequestClose={() => setModalVisible(false)}>
+                  <MealSelectionModal
+                    handleMealSelection={handleMealSelection}
+                    closeModal={() => {
+                      setModalVisible(false);
+                      setSelectedIngredients({
+                        type: 'added',
+                        item: selectedItem,
+                        nutritionData,
+                        meals: selectedMeals,
+                      });
+                    }}
+                    selectedItem={{ item: selectedItem, nutritionData, meals: selectedMeals }}
+                  />
+                </Modal>
               </View>
             </View>
           </ScrollView>

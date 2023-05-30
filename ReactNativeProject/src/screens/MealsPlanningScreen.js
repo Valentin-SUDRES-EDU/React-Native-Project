@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, Animated } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, FlatList, Image, TouchableOpacity, Modal } from 'react-native';
 import { Swipeable, GestureHandlerRootView } from 'react-native-gesture-handler';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
+import MealSelectionModal from '../components/MealSelectionModal.js';
 import {
   useSelectedIngredients,
   useSelectedIngredientsDispatch,
@@ -12,69 +13,88 @@ const MealsPlanningScreen = () => {
   const selectedIngredients = useSelectedIngredients();
   const setSelectedIngredients = useSelectedIngredientsDispatch();
 
-  const renderItem = ({ item }) => {
-    const onEdit = () => {
-      setSelectedIngredients({ type: 'deleted', item: item.item });
-      console.log(selectedIngredients);
-    };
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
-    const onDelete = () => {
-      setSelectedIngredients({ type: 'deleted', item: item.item });
-      console.log(selectedIngredients);
-    };
+  const handleMealSelection = (day, meals) => {
+    if (selectedItem) {
+      selectedItem.meals.set(day, meals);
+    }
+    console.log(selectedItem.meals);
+  };
 
-    const renderRightActions = (progress, dragX) => {
-      const trans = dragX.interpolate({
-        inputRange: [-200, 0],
-        outputRange: [1, 0],
-      });
+  const onEdit = (item) => {
+    setSelectedItem(item);
+    setModalVisible(true);
+  };
 
-      return (
-        <View style={styles.buttons}>
-          <TouchableOpacity style={styles.editButton} onPress={onEdit}>
-            <Animated.Text style={{ transform: [{ scale: trans }] }}>Edit Day</Animated.Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
-            <Animated.Text style={{ transform: [{ scale: trans }] }}>Supprimer</Animated.Text>
-          </TouchableOpacity>
-        </View>
-      );
-    };
+  const onDelete = (item) => {
+    setSelectedIngredients({ type: 'deleted', item: item.item });
+  };
 
+  const renderRightActions = (progress, dragX, item) => {
     return (
-      <Swipeable renderRightActions={renderRightActions}>
-        <View style={styles.itemContainer}>
-          {item.item.image ? (
-            <Image source={{ uri: item.item.image }} style={styles.image} />
-          ) : (
-            <MaterialCommunityIcons
-              name="image-off-outline"
-              color="lightgrey"
-              size={50}
-              style={styles.image}
-            />
-          )}
-          <Text>{item.item.label}</Text>
-          <Text> - Calories : {item.nutritionData.calories} kcal</Text>
-        </View>
-      </Swipeable>
+      <View style={styles.buttons}>
+        <TouchableOpacity style={styles.editButton} onPress={() => onEdit(item)}>
+          <Text style={styles.buttonText}>Edit Day</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.deleteButton} onPress={() => onDelete(item)}>
+          <Text style={styles.buttonText}>Supprimer</Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 
+  const renderItem = ({ item }) => (
+    <Swipeable renderRightActions={(progress, dragX) => renderRightActions(progress, dragX, item)}>
+      <View style={styles.itemContainer}>
+        {item.item.image ? (
+          <Image source={{ uri: item.item.image }} style={styles.image} />
+        ) : (
+          <MaterialCommunityIcons
+            name="image-off-outline"
+            color="lightgrey"
+            size={50}
+            style={styles.image}
+          />
+        )}
+        <Text>{item.item.label}</Text>
+        <Text> - Calories : {item.nutritionData.calories} kcal</Text>
+      </View>
+    </Swipeable>
+  );
+
   return (
-    <GestureHandlerRootView>
-      <FlatList
-        data={selectedIngredients}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.item.id}
-      />
-    </GestureHandlerRootView>
+    <View style={styles.container}>
+      <GestureHandlerRootView>
+        <FlatList
+          data={selectedIngredients}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.item.id}
+        />
+      </GestureHandlerRootView>
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setModalVisible(false)}>
+        <MealSelectionModal
+          handleMealSelection={handleMealSelection}
+          closeModal={() => setModalVisible(false)}
+          selectedItem={selectedItem}
+        />
+      </Modal>
+    </View>
   );
 };
 
 const styles = {
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
   buttons: {
-    flexDirection: 'column',
+    flexDirection: 'row',
   },
   itemContainer: {
     flexDirection: 'row',
@@ -88,14 +108,19 @@ const styles = {
     height: 50,
     marginRight: 10,
   },
-  editButton: {
-    backgroundColor: 'green',
+  deleteButton: {
+    backgroundColor: 'red',
     justifyContent: 'center',
     alignItems: 'center',
     width: 100,
   },
-  deleteButton: {
-    backgroundColor: 'red',
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  editButton: {
+    backgroundColor: 'green',
     justifyContent: 'center',
     alignItems: 'center',
     width: 100,

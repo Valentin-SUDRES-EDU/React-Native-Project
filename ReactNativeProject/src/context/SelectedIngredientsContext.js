@@ -31,6 +31,7 @@ function SelectedIngredientsReducer(selectedIngredients, action) {
         {
           item: action.item,
           nutritionData: action.nutritionData,
+          meals: action.meals,
         },
       ];
     }
