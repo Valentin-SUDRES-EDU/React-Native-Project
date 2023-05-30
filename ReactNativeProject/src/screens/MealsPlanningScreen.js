@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, FlatList, Image } from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { useSelectedIngredients } from '../context/SelectedIngredientsContext.js';
 
@@ -7,7 +8,16 @@ const MealsPlanningScreen = () => {
   const selectedIngredients = useSelectedIngredients();
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
-      <Image source={{ uri: item.item.image }} style={styles.image} />
+      {item.item.image ? (
+        <Image source={{ uri: item.item.image }} style={styles.image} />
+      ) : (
+        <MaterialCommunityIcons
+          name="image-off-outline"
+          color="lightgrey"
+          size={50}
+          style={styles.image}
+        />
+      )}
       <Text>{item.item.label}</Text>
       <Text> - Calories : {item.nutritionData.calories} kcal</Text>
     </View>

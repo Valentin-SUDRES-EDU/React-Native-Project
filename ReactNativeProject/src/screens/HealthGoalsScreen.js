@@ -26,14 +26,6 @@ const HealthGoalsScreen = () => {
   const [BMRHealthGoal, setBMRHealthGoal] = useState();
 
   const handleFormSubmit = () => {
-    console.log('Form submitted!');
-    console.log('Age:', Age);
-    console.log('Gender:', Gender);
-    console.log('Height:', Height);
-    console.log('Weight:', Weight);
-    console.log('Activity Level:', ActivityLevel);
-    console.log('Health Goal:', HealthGoal);
-
     const BMR = calculateBMR();
     setBMR(BMR);
 
@@ -42,10 +34,6 @@ const HealthGoalsScreen = () => {
 
     const BMRHealthGoal = adjustBMRWithHealthGoal(BMRActivityLevel);
     setBMRHealthGoal(BMRHealthGoal);
-
-    console.log('BMR:', BMR);
-    console.log('BMRActivityLevel:', BMRActivityLevel);
-    console.log('BMRHealthGoal:', BMRHealthGoal);
 
     setShowModal(true);
   };
