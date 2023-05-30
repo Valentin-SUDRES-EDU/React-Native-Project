@@ -16,6 +16,11 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { v4 as uuidv4 } from 'uuid';
 
+import {
+  useSelectedIngredients,
+  useSelectedIngredientsDispatch,
+} from '../context/SelectedIngredientsContext.js';
+
 const FoodDatabaseScreen = () => {
   const [search, setSearch] = useState('');
   const [data, setData] = useState([]);
@@ -23,7 +28,8 @@ const FoodDatabaseScreen = () => {
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [nutritionData, setNutritionData] = useState(null);
-  const [selectedIngredients, setSelectedIngredients] = useState([]);
+  const selectedIngredients = useSelectedIngredients();
+  const setSelectedIngredients = useSelectedIngredientsDispatch();
   const [autoCompleteData, setAutoCompleteData] = useState([]);
   const [showAutoComplete, setShowAutoComplete] = useState(true);
 
@@ -165,6 +171,10 @@ const FoodDatabaseScreen = () => {
     return Math.floor(value * Math.pow(10, places)) / Math.pow(10, places);
   };
 
+  const isItemSelected = (item) => {
+    return selectedIngredients.some((selectedItem) => selectedItem.item.id === item.id);
+  };
+
   const renderFoodItem = ({ item }) => (
     <TouchableOpacity
       style={[styles.itemContainer, item === selectedItem && styles.selectedItemContainer]}
@@ -299,11 +309,17 @@ const FoodDatabaseScreen = () => {
                 <TouchableOpacity
                   style={styles.addButton}
                   onPress={() => {
-                    selectedIngredients.push({ item: selectedItem, nutritionData });
-                    setSelectedIngredients(selectedIngredients);
+                    if (isItemSelected(selectedItem)) {
+                      setSelectedIngredients({ type: 'deleted', item: selectedItem });
+                    } else {
+                      setSelectedIngredients({ type: 'added', item: selectedItem, nutritionData });
+                    }
                   }}>
-                  <Text style={styles.buttonText}>Add to list</Text>
+                  <Text style={styles.buttonText}>
+                    {isItemSelected(selectedItem) ? 'Supprimer de la liste' : 'Ajouter à la liste'}
+                  </Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity
                   style={styles.closeButton}
                   onPress={() => {
