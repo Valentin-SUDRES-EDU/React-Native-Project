@@ -15,6 +15,79 @@ const MealsPlanningScreen = () => {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [collapsedDays, setCollapsedDays] = useState([]);
+
+  const toggleCollapse = (day) => {
+    if (collapsedDays.includes(day)) {
+      setCollapsedDays(collapsedDays.filter((item) => item !== day));
+    } else {
+      setCollapsedDays([...collapsedDays, day]);
+    }
+  };
+
+  const generateColor = (index) => {
+    const colors = [
+      '#E99C49',
+      '#EBA65C',
+      '#EDB06E',
+      '#EFB980',
+      '#F2C392',
+      '#F4CDA4',
+      '#F6D7B6',
+      '#F7DBBD',
+    ];
+    return colors[index % colors.length];
+  };
+
+  const renderMeal = ({ item }) => (
+    <TouchableOpacity onPress={() => toggleCollapse(item)}>
+      <View style={styles.mealContainer}>
+        <Text style={styles.mealText}>{item}</Text>
+        {collapsedDays.includes(item) ? (
+          <MaterialCommunityIcons
+            name="arrow-up-drop-circle"
+            size={20}
+            color="#424B54"
+            style={styles.mealIcon}
+          />
+        ) : (
+          <MaterialCommunityIcons name="arrow-down-drop-circle" size={20} color="#424B54" />
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderDay = ({ item, index }) => {
+    const isCollapsed = collapsedDays.includes(item);
+    const dayColor = generateColor(index);
+
+    return (
+      <View
+        style={[
+          styles.dayContainer,
+          { backgroundColor: dayColor, justifyContent: 'space-between' },
+        ]}>
+        <TouchableOpacity onPress={() => toggleCollapse(item)}>
+          <View style={styles.dayHeader}>
+            <Text style={styles.dayHeaderText}>{item}</Text>
+            {isCollapsed ? (
+              <MaterialCommunityIcons name="arrow-up-drop-circle" size={20} color="#424B54" />
+            ) : (
+              <MaterialCommunityIcons name="arrow-down-drop-circle" size={20} color="#424B54" />
+            )}
+          </View>
+        </TouchableOpacity>
+        {isCollapsed && (
+          <FlatList
+            style={styles.mealList}
+            data={['Breakfast', 'Lunch', 'Snack', 'Dinner']}
+            renderItem={renderMeal}
+            keyExtractor={(meal) => meal}
+          />
+        )}
+      </View>
+    );
+  };
 
   const handleMealSelection = (day, meals) => {
     if (selectedItem) {
@@ -72,6 +145,25 @@ const MealsPlanningScreen = () => {
           renderItem={renderItem}
           keyExtractor={(item) => item.item.id}
         />
+        <FlatList
+          data={[
+            'Uncategorized',
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday',
+            'Sunday',
+          ]}
+          renderItem={renderDay}
+          keyExtractor={(day) => day}
+        />
+        <FlatList
+          data={selectedIngredients}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.item.id}
+        />
       </GestureHandlerRootView>
       <Modal
         visible={modalVisible}
@@ -103,6 +195,35 @@ const styles = {
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
+
+  dayHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '8.3%',
+  },
+
+  dayHeaderText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  mealContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+
+  mealText: {
+    marginLeft: 10,
+  },
+
+  mealList: {
+    justifyContent: 'space-between',
+  },
+
   image: {
     width: 50,
     height: 50,
