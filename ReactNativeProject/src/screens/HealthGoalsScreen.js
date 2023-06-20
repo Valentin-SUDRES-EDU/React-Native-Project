@@ -1,5 +1,5 @@
 import { Picker } from '@react-native-picker/picker';
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,10 @@ import {
   Platform,
 } from 'react-native';
 
+import BMRContext from '../context/BMRContext.js';
+
+
+
 const HealthGoalsScreen = () => {
   const [showModal, setShowModal] = useState(false);
   const [Age, setAge] = useState();
@@ -21,14 +25,15 @@ const HealthGoalsScreen = () => {
   const [Weight, setWeight] = useState();
   const [ActivityLevel = 'sedentary', setActivityLevel] = useState();
   const [HealthGoal = 'weightLoss', setHealthGoal] = useState();
-  const [BMR, setBMR] = useState();
+  const { BMR, setBMR } = useContext(BMRContext);
   const [BMRActivityLevel, setBMRActivityLevel] = useState();
   const [BMRHealthGoal, setBMRHealthGoal] = useState();
 
+
+  
   const handleFormSubmit = () => {
     const BMR = calculateBMR();
-    setBMR(BMR);
-
+  
     const BMRActivityLevel = adjustBMRWithActivityLevel(BMR);
     setBMRActivityLevel(BMRActivityLevel);
 
@@ -36,6 +41,8 @@ const HealthGoalsScreen = () => {
     setBMRHealthGoal(BMRHealthGoal);
 
     setShowModal(true);
+
+    setBMR(BMRHealthGoal);
   };
 
   const calculateBMR = () => {
@@ -91,90 +98,92 @@ const HealthGoalsScreen = () => {
   };
 
   return (
-    <ScrollView>
-      <TouchableWithoutFeedback onPress={dismissKeyboard}>
-        <View style={styles.container}>
-          <Text style={styles.text}>Age</Text>
-          <TextInput
-            value={Age}
-            onChangeText={setAge}
-            keyboardType="numeric"
-            placeholder="Enter your age"
-            style={styles.input}
-          />
+    <BMRContext.Provider value={BMR}>
+      <ScrollView>
+        <TouchableWithoutFeedback onPress={dismissKeyboard}>
+          <View style={styles.container}>
+            <Text style={styles.text}>Age</Text>
+            <TextInput
+              value={Age}
+              onChangeText={setAge}
+              keyboardType="numeric"
+              placeholder="Enter your age"
+              style={styles.input}
+            />
 
-          <Text style={styles.text}>Gender</Text>
-          <Picker
-            selectedValue={Gender}
-            onValueChange={(itemValue) => setGender(itemValue)}
-            style={[Platform.OS === 'ios' && styles.picker]}
-            itemStyle={[Platform.OS === 'ios' && styles.pickerItem]}>
-            <Picker.Item label="Homme" value="male" />
-            <Picker.Item label="Femme" value="female" />
-          </Picker>
+            <Text style={styles.text}>Gender</Text>
+            <Picker
+              selectedValue={Gender}
+              onValueChange={(itemValue) => setGender(itemValue)}
+              style={[Platform.OS === 'ios' && styles.picker]}
+              itemStyle={[Platform.OS === 'ios' && styles.pickerItem]}>
+              <Picker.Item label="Homme" value="male" />
+              <Picker.Item label="Femme" value="female" />
+            </Picker>
 
-          <Text style={styles.text}>Height</Text>
-          <TextInput
-            value={Height}
-            onChangeText={setHeight}
-            keyboardType="numeric"
-            placeholder="Enter your height"
-            style={styles.input}
-          />
+            <Text style={styles.text}>Height</Text>
+            <TextInput
+              value={Height}
+              onChangeText={setHeight}
+              keyboardType="numeric"
+              placeholder="Enter your height"
+              style={styles.input}
+            />
 
-          <Text style={styles.text}>Weight</Text>
-          <TextInput
-            value={Weight}
-            onChangeText={setWeight}
-            keyboardType="numeric"
-            placeholder="Enter your weight"
-            style={styles.input}
-          />
+            <Text style={styles.text}>Weight</Text>
+            <TextInput
+              value={Weight}
+              onChangeText={setWeight}
+              keyboardType="numeric"
+              placeholder="Enter your weight"
+              style={styles.input}
+            />
 
-          <Text style={styles.text}>Activity level</Text>
-          <Picker
-            selectedValue={ActivityLevel}
-            onValueChange={(itemValue) => setActivityLevel(itemValue)}
-            style={[Platform.OS === 'ios' && styles.picker]}
-            itemStyle={[Platform.OS === 'ios' && styles.pickerItem]}>
-            <Picker.Item label="Sedentary" value="sedentary" />
-            <Picker.Item label="Light Exercise" value="light" />
-            <Picker.Item label="Moderate Exercise" value="moderate" />
-            <Picker.Item label="Heavy Exercise" value="heavy" />
-            <Picker.Item label="Extra Active" value="extra" />
-          </Picker>
+            <Text style={styles.text}>Activity level</Text>
+            <Picker
+              selectedValue={ActivityLevel}
+              onValueChange={(itemValue) => setActivityLevel(itemValue)}
+              style={[Platform.OS === 'ios' && styles.picker]}
+              itemStyle={[Platform.OS === 'ios' && styles.pickerItem]}>
+              <Picker.Item label="Sedentary" value="sedentary" />
+              <Picker.Item label="Light Exercise" value="light" />
+              <Picker.Item label="Moderate Exercise" value="moderate" />
+              <Picker.Item label="Heavy Exercise" value="heavy" />
+              <Picker.Item label="Extra Active" value="extra" />
+            </Picker>
 
-          <Text style={styles.text}>Health Goal</Text>
-          <Picker
-            selectedValue={HealthGoal}
-            onValueChange={(itemValue) => setHealthGoal(itemValue)}
-            style={[Platform.OS === 'ios' && styles.picker]}
-            itemStyle={[Platform.OS === 'ios' && styles.pickerItem]}>
-            <Picker.Item label="Weight Loss" value="weightLoss" />
-            <Picker.Item label="Weight Maintenance" value="weightMaintain" />
-            <Picker.Item label="Weight Gain" value="weightGain" />
-          </Picker>
+            <Text style={styles.text}>Health Goal</Text>
+            <Picker
+              selectedValue={HealthGoal}
+              onValueChange={(itemValue) => setHealthGoal(itemValue)}
+              style={[Platform.OS === 'ios' && styles.picker]}
+              itemStyle={[Platform.OS === 'ios' && styles.pickerItem]}>
+              <Picker.Item label="Weight Loss" value="weightLoss" />
+              <Picker.Item label="Weight Maintenance" value="weightMaintain" />
+              <Picker.Item label="Weight Gain" value="weightGain" />
+            </Picker>
 
-          <Button
-            title="Submit"
-            onPress={handleFormSubmit}
-            disabled={!Age || !Height || !Weight}
-            style={styles.button}
-          />
+            <Button
+              title="Submit"
+              onPress={handleFormSubmit}
+              disabled={!Age || !Height || !Weight}
+              style={styles.button}
+            />
 
-          <Modal visible={showModal} animationType="slide" transparent>
-            <View style={styles.modalContainer}>
-              <View style={styles.modalContent}>
-                <Text>Your BMR is: {BMR} kcal</Text>
-                <Text>Your BMR adjusted based on Activity Level is: {BMRActivityLevel} kcal</Text>
-                <Text>Your Caloric intake based on Health Goal is: {BMRHealthGoal} kcal</Text>
-                <Button title="Close" onPress={() => setShowModal(false)} />
+            <Modal visible={showModal} animationType="slide" transparent>
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <Text>Your BMR is: {BMR} kcal</Text>
+                  <Text>Your BMR adjusted based on Activity Level is: {BMRActivityLevel} kcal</Text>
+                  <Text>Your Caloric intake based on Health Goal is: {BMRHealthGoal} kcal</Text>
+                  <Button title="Close" onPress={() => setShowModal(false)} />
+                </View>
               </View>
-            </View>
-          </Modal>
-        </View>
-      </TouchableWithoutFeedback>
-    </ScrollView>
+            </Modal>
+          </View>
+        </TouchableWithoutFeedback>
+      </ScrollView>
+    </BMRContext.Provider>
   );
 };
 
