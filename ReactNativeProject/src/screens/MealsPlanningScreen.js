@@ -33,13 +33,18 @@ const MealsPlanningScreen = () => {
           )
         );
       }}>
-      <Text style={styles.dayText}>{item}</Text>
+      <Text style={styles.dayText}>
+        {item
+          .split(' ')
+          .map((word) => word.substring(0, 2))
+          .join(' ')}
+      </Text>
     </TouchableOpacity>
   );
 
   const renderMealItem = ({ item }) => (
     <TouchableOpacity
-      style={[styles.dayButton, selectedMeal === item && styles.selectedDayButton]}
+      style={[styles.mealButton, selectedMeal === item && styles.selectedMealButton]}
       onPress={() => {
         setSelectedMeal(item);
         setfilteredIngredients(
@@ -56,7 +61,6 @@ const MealsPlanningScreen = () => {
     if (selectedItem) {
       selectedItem.meals.set(day, meals);
     }
-    console.log(selectedItem.meals);
   };
 
   const onEdit = (item) => {
@@ -72,10 +76,10 @@ const MealsPlanningScreen = () => {
     return (
       <View style={styles.buttons}>
         <TouchableOpacity style={styles.editButton} onPress={() => onEdit(item)}>
-          <Text style={styles.buttonText}>Edit</Text>
+          <MaterialCommunityIcons name="pencil" size={35} color="white"/>
         </TouchableOpacity>
         <TouchableOpacity style={styles.deleteButton} onPress={() => onDelete(item)}>
-          <Text style={styles.buttonText}>Delete</Text>
+          <MaterialCommunityIcons name="delete" size={35} color="white"/>
         </TouchableOpacity>
       </View>
     );
@@ -109,14 +113,10 @@ const MealsPlanningScreen = () => {
           keyExtractor={(item) => item}
           horizontal
           showsHorizontalScrollIndicator={false}
+          style={styles.dayList}
+          contentContainerStyle={styles.dayListContent}
         />
-        <FlatList
-          data={mealOptions}
-          renderItem={renderMealItem}
-          keyExtractor={(item) => item}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-        />
+        <FlatList data={mealOptions} renderItem={renderMealItem} keyExtractor={(item) => item} />
         <FlatList
           data={filteredIngredients}
           renderItem={renderItem}
@@ -151,22 +151,6 @@ const styles = {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-  },
-
-  dayContainer: {
-    flexDirection: 'column',
-  },
-
-  dayHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 30,
-  },
-
-  dayHeaderText: {
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 
   mealContainer: {
@@ -204,44 +188,62 @@ const styles = {
     width: 75,
   },
 
-  navigationContainer: {
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#000',
+
+  dayList: {
+    width: '100%',
+    paddingHorizontal: 0,
   },
+
+  dayListContent:{
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 0,
+  },
+
   dayButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     paddingVertical: 8,
-    marginRight: 10,
-    borderWidth: 1,
-    borderColor: '#000',
-    borderRadius: 5,
+    marginBottom: 10,
+
   },
+
   selectedDayButton: {
-    backgroundColor: 'green',
+    backgroundColor: '#E69035',
   },
+
   dayText: {
     fontWeight: 'bold',
   },
+
   mealsContainer: {
     flex: 1,
     padding: 20,
   },
+
   selectedDayText: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
   },
+
   mealButton: {
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#F2F2F2',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#CCCCCC',
     width: '100%',
-    height: 40,
-    borderWidth: 1,
-    borderRadius: 5,
-    borderColor: '#000',
-    marginTop: 10,
   },
+
+  selectedMealButton: {
+    borderLeftWidth: 8,
+    borderLeftColor: '#DB7E1A',
+    backgroundColor: '#F0B97F',
+  },
+
+
 };
 
 export default MealsPlanningScreen;

@@ -335,7 +335,7 @@ const FoodDatabaseScreen = () => {
                     }
                   }}>
                   <Text style={styles.buttonText}>
-                    {isItemSelected(selectedItem) ? 'Supprimer de la liste' : 'Ajouter à la liste'}
+                    {isItemSelected(selectedItem) ? 'Remove from meals planning' : 'Add to meals planning'}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
