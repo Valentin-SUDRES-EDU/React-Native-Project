@@ -295,7 +295,7 @@ const FoodDatabaseScreen = () => {
           </View>
         )}
 
-        {isNoResults && !showAutoComplete && <Text>Aucun élément trouvé</Text>}
+        {isNoResults && !showAutoComplete && <Text>No item found</Text>}
 
         {!selectedItem && !nutritionData && (
           <FlatList
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignSelf: 'center',
     borderRadius: 50,
-    backgroundColor: '#424B54',
+    backgroundColor: '#3AB800',
   },
   autoCompleteItem: {
     padding: 10,

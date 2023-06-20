@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, Modal } from 'react-native';
+import { ProgressBar } from 'react-native-elements';
 import { Swipeable, GestureHandlerRootView } from 'react-native-gesture-handler';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { ProgressBar } from 'react-native-elements';
 
 
 import MealSelectionModal from '../components/MealSelectionModal.js';
@@ -189,9 +189,9 @@ const MealsPlanningScreen = () => {
         Total {selectedDay} Calories: {totalDayCalories} kcal
       </Text>
 
-      <Text>Total Day Calories: {totalDayCalories}</Text>
+      {/* <Text>Total Day Calories: {totalDayCalories}</Text>
       <ProgressBar progress={totalDayCalories / BMR} width={null} height={20} borderRadius={10} />
-      <Text>BMR: {BMR}</Text>
+      <Text>BMR: {BMR}</Text> */}
     </View>
   );
 };
