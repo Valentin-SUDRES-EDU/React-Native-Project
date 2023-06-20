@@ -16,11 +16,20 @@ const MealsPlanningScreen = () => {
   const setSelectedIngredients = useSelectedIngredientsDispatch();
 
   const [filteredIngredients, setfilteredIngredients] = useState([]);
+  
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const mealOptions = ['Breakfast', 'Lunch', 'Snack', 'Dinner'];
+
+  const calculateTotalMealCalories = () => {
+    let totalCalories = 0;
+    filteredIngredients.forEach((ingredient) => {
+      totalCalories += ingredient.nutritionData.calories;
+    });
+    return totalCalories;
+  };
 
   const renderDayItem = ({ item }) => (
     <TouchableOpacity
@@ -42,20 +51,41 @@ const MealsPlanningScreen = () => {
     </TouchableOpacity>
   );
 
-  const renderMealItem = ({ item }) => (
-    <TouchableOpacity
-      style={[styles.mealButton, selectedMeal === item && styles.selectedMealButton]}
-      onPress={() => {
-        setSelectedMeal(item);
-        setfilteredIngredients(
-          selectedIngredients.filter((ingredient) => 
-            ingredient.meals?.get(selectedDay).includes(item)
-          )
-        );
-      }}>
-      <Text style={styles.dayText}>{item}</Text>
-    </TouchableOpacity>
-  );
+  const renderMealItem = ({ item }) => {
+    const handleMealSelection = () => {
+      setSelectedMeal(item);
+      setfilteredIngredients(
+        selectedIngredients.filter((ingredient) =>
+          ingredient.meals?.get(selectedDay).includes(item)
+        )
+      );
+    };
+
+    const totalMealCalories = calculateTotalMealCalories();
+  
+    return (
+      <View>
+        <TouchableOpacity
+          style={[styles.mealButton, selectedMeal === item && styles.selectedMealButton]}
+          onPress={handleMealSelection}>
+          <Text style={styles.dayText}>{item}</Text>
+        </TouchableOpacity>
+  
+        {selectedMeal === item && (
+          <View>
+            <FlatList
+              data={filteredIngredients}
+              renderItem={renderItem}
+              keyExtractor={(item) => item.item.id}
+            />
+            <Text style={styles.TotMealCalText}>
+              Total {selectedMeal} Calories: {totalMealCalories} kcal
+            </Text>
+          </View>
+        )}
+      </View>
+    );
+  };
 
   const handleMealSelection = (day, meals) => {
     if (selectedItem) {
@@ -76,10 +106,10 @@ const MealsPlanningScreen = () => {
     return (
       <View style={styles.buttons}>
         <TouchableOpacity style={styles.editButton} onPress={() => onEdit(item)}>
-          <MaterialCommunityIcons name="pencil" size={35} color="white"/>
+          <MaterialCommunityIcons name="pencil" size={20} color="white"/>
         </TouchableOpacity>
         <TouchableOpacity style={styles.deleteButton} onPress={() => onDelete(item)}>
-          <MaterialCommunityIcons name="delete" size={35} color="white"/>
+          <MaterialCommunityIcons name="delete" size={20} color="white"/>
         </TouchableOpacity>
       </View>
     );
@@ -99,7 +129,7 @@ const MealsPlanningScreen = () => {
           />
         )}
         <Text>{item.item.label}</Text>
-        <Text> - Calories : {item.nutritionData.calories} kcal</Text>
+        <Text> - {item.nutritionData.calories} kcal per 100g</Text>
       </View>
     </Swipeable>
   );
@@ -117,11 +147,6 @@ const MealsPlanningScreen = () => {
           contentContainerStyle={styles.dayListContent}
         />
         <FlatList data={mealOptions} renderItem={renderMealItem} keyExtractor={(item) => item} />
-        <FlatList
-          data={filteredIngredients}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.item.id}
-        />
       </GestureHandlerRootView>
       <Modal
         visible={modalVisible}
@@ -151,6 +176,8 @@ const styles = {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
+    borderLeftWidth: 8,
+    borderLeftColor: 'white',
   },
 
   mealContainer: {
@@ -172,7 +199,7 @@ const styles = {
     backgroundColor: 'red',
     justifyContent: 'center',
     alignItems: 'center',
-    width: 75,
+    width: 50,
   },
 
   buttonText: {
@@ -185,7 +212,7 @@ const styles = {
     backgroundColor: 'green',
     justifyContent: 'center',
     alignItems: 'center',
-    width: 75,
+    width: 50,
   },
 
 
@@ -241,6 +268,13 @@ const styles = {
     borderLeftWidth: 8,
     borderLeftColor: '#DB7E1A',
     backgroundColor: '#F0B97F',
+  },
+
+  TotMealCalText:{
+    textAlign: 'right',
+    padding: 10,
+    backgroundColor: '#DB7E1A',
+    fontWeight: 'bold', 
   },
 
 
