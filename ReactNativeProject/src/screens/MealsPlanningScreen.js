@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, Modal } from 'react-native';
 import { Swipeable, GestureHandlerRootView } from 'react-native-gesture-handler';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -20,6 +20,8 @@ const MealsPlanningScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
+  const [totalDayCalories, setTotalDayCalories] = useState(0);
+
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const mealOptions = ['Breakfast', 'Lunch', 'Snack', 'Dinner'];
 
@@ -30,6 +32,22 @@ const MealsPlanningScreen = () => {
     });
     return totalCalories;
   };
+
+  // NE FONCTIONNE PAS 
+  // const calculateTotalDayCalories = () => {
+  //   let totalCalories = 0;
+  //   daysOfWeek.forEach((day) => {
+  //     const ingredients = selectedIngredients.filter((ingredient) =>
+  //       ingredient.meals?.get(day).includes(selectedMeal)
+  //     );
+  //     totalCalories += calculateTotalMealCalories(ingredients);
+  //   });
+  //   setTotalDayCalories(totalCalories);
+  // };
+
+  // useEffect(() => {
+  //   calculateTotalDayCalories();
+  // }, [selectedIngredients]);
 
   const renderDayItem = ({ item }) => (
     <TouchableOpacity
@@ -59,6 +77,7 @@ const MealsPlanningScreen = () => {
           ingredient.meals?.get(selectedDay).includes(item)
         )
       );
+
     };
 
     const totalMealCalories = calculateTotalMealCalories();
@@ -159,6 +178,10 @@ const MealsPlanningScreen = () => {
           selectedItem={selectedItem}
         />
       </Modal>
+
+      <Text style={styles.TotalDayCalText}>
+        Total {selectedDay} Calories: {totalDayCalories} kcal
+      </Text>
     </View>
   );
 };
@@ -259,8 +282,6 @@ const styles = {
     backgroundColor: '#F2F2F2',
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#CCCCCC',
     width: '100%',
   },
 
@@ -275,6 +296,14 @@ const styles = {
     padding: 10,
     backgroundColor: '#DB7E1A',
     fontWeight: 'bold', 
+  },
+
+  TotalDayCalText: {
+    textAlign: 'right',
+    padding: 10,
+    fontSize: 20,
+    backgroundColor: '#E69035',
+    fontWeight: 'bold',
   },
 
 
