@@ -53,7 +53,7 @@ const MealSelectionModal = ({ handleMealSelection, closeModal, selectedItem }) =
                     selectedMeals.get(day)?.includes(meal) && styles.selectedMealButton,
                   ]}
                   onPress={() => toggleMealSelection(day, meal)}>
-                  <Text>{meal}</Text>
+                  <Text style={styles.mealButtonText}>{meal}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -107,6 +107,7 @@ const styles = {
   dayText: {
     fontWeight: 'bold',
     width: 75,
+    fontSize: 12,
   },
   mealsContainer: {
     flexDirection: 'row',
@@ -114,12 +115,15 @@ const styles = {
   mealButton: {
     justifyContent: 'center',
     alignItems: 'center',
-    width: 60,
+    width: 50,
     height: 40,
     borderWidth: 1,
     borderRadius: 5,
     borderColor: 'black',
     marginLeft: 10,
+  },
+  mealButtonText: {
+    fontSize: 8,
   },
   selectedMealButton: {
     backgroundColor: 'green',
