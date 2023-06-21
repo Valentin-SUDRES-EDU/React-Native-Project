@@ -1,28 +1,25 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, Modal } from 'react-native';
-import { ProgressBar } from 'react-native-elements';
 import { Swipeable, GestureHandlerRootView } from 'react-native-gesture-handler';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-
 import MealSelectionModal from '../components/MealSelectionModal.js';
+import BMRContext from '../context/BMRContext.js';
 import {
   useSelectedIngredients,
   useSelectedIngredientsDispatch,
 } from '../context/SelectedIngredientsContext.js';
 
-import BMRContext from '../context/BMRContext.js';
-
 const MealsPlanningScreen = () => {
   const { BMR, setBMR } = useContext(BMRContext);
-  
+
   const [selectedDay, setSelectedDay] = useState('Monday');
   const [selectedMeal, setSelectedMeal] = useState('Breakfast');
   const selectedIngredients = useSelectedIngredients();
   const setSelectedIngredients = useSelectedIngredientsDispatch();
 
   const [filteredIngredients, setfilteredIngredients] = useState([]);
-  
+
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
@@ -39,14 +36,12 @@ const MealsPlanningScreen = () => {
     return totalCalories;
   };
 
-  // NE FONCTIONNE PAS 
   const calculateTotalDayCalories = () => {
     let totalCalories = 0;
-    daysOfWeek.forEach((day) => {
-      const ingredients = selectedIngredients.filter((ingredient) =>
-        ingredient.meals?.get(day).includes(selectedMeal)
-      );
-      totalCalories += calculateTotalMealCalories(ingredients);
+    selectedIngredients.forEach((ingredient) => {
+      totalCalories += ingredient.nutritionData.calories * ingredient.meals.get(selectedDay).length;
+      console.log(selectedDay);
+      console.log(ingredient.meals.get(selectedDay));
     });
     setTotalDayCalories(totalCalories);
   };
@@ -83,11 +78,11 @@ const MealsPlanningScreen = () => {
           ingredient.meals?.get(selectedDay).includes(item)
         )
       );
-
     };
 
     const totalMealCalories = calculateTotalMealCalories();
-  
+    const totalDayCalories = calculateTotalDayCalories();
+
     return (
       <View>
         <TouchableOpacity
@@ -95,7 +90,7 @@ const MealsPlanningScreen = () => {
           onPress={handleMealSelection}>
           <Text style={styles.dayText}>{item}</Text>
         </TouchableOpacity>
-  
+
         {selectedMeal === item && (
           <View>
             <FlatList
@@ -115,26 +110,29 @@ const MealsPlanningScreen = () => {
   const handleMealSelection = (day, meals) => {
     if (selectedItem) {
       selectedItem.meals.set(day, meals);
+      calculateTotalDayCalories();
     }
   };
 
   const onEdit = (item) => {
     setSelectedItem(item);
     setModalVisible(true);
+    calculateTotalDayCalories();
   };
 
   const onDelete = (item) => {
     setSelectedIngredients({ type: 'deleted', item: item.item });
+    calculateTotalDayCalories();
   };
 
   const renderRightActions = (progress, dragX, item) => {
     return (
       <View style={styles.buttons}>
         <TouchableOpacity style={styles.editButton} onPress={() => onEdit(item)}>
-          <MaterialCommunityIcons name="pencil" size={20} color="white"/>
+          <MaterialCommunityIcons name="pencil" size={20} color="white" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.deleteButton} onPress={() => onDelete(item)}>
-          <MaterialCommunityIcons name="delete" size={20} color="white"/>
+          <MaterialCommunityIcons name="delete" size={20} color="white" />
         </TouchableOpacity>
       </View>
     );
@@ -188,10 +186,8 @@ const MealsPlanningScreen = () => {
       <Text style={styles.TotalDayCalText}>
         Total {selectedDay} Calories: {totalDayCalories} kcal
       </Text>
-
-      {/* <Text>Total Day Calories: {totalDayCalories}</Text>
-      <ProgressBar progress={totalDayCalories / BMR} width={null} height={20} borderRadius={10} />
-      <Text>BMR: {BMR}</Text> */}
+      {BMR && <Text style={styles.TotalDayCalText}>Reminder: Your BMR is {BMR} kcal</Text>}
+      {!BMR && <Text style={styles.TotalDayCalText}>To to Health Goal to check BMR</Text>}
     </View>
   );
 };
@@ -248,13 +244,12 @@ const styles = {
     width: 50,
   },
 
-
   dayList: {
     width: '100%',
     paddingHorizontal: 0,
   },
 
-  dayListContent:{
+  dayListContent: {
     flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: 0,
@@ -264,7 +259,6 @@ const styles = {
     paddingHorizontal: 18,
     paddingVertical: 8,
     marginBottom: 10,
-
   },
 
   selectedDayButton: {
@@ -301,22 +295,20 @@ const styles = {
     backgroundColor: '#F0B97F',
   },
 
-  TotMealCalText:{
+  TotMealCalText: {
     textAlign: 'right',
     padding: 10,
     backgroundColor: '#DB7E1A',
-    fontWeight: 'bold', 
+    fontWeight: 'bold',
   },
 
   TotalDayCalText: {
     textAlign: 'right',
     padding: 10,
-    fontSize: 20,
+    fontSize: 15,
     backgroundColor: '#E69035',
     fontWeight: 'bold',
   },
-
-
 };
 
 export default MealsPlanningScreen;
