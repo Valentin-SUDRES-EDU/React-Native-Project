@@ -12,3 +12,6 @@ You can clone this Git repo, and install the necessary dependencies using the pa
 
 ## How to use it
 First, go to the "Health Goals" screen. There, you'll need to fill in the short questionnaire to define your goals. Next, go to the "Food Database" screen and choose your items. Finally, you can see your schedule in the "Meals Planning" screen. 
+
+##Demo
+https://github.com/Valentin-SUDRES-EDU/React-Native-Project/assets/91461565/28fa30c4-6f4f-43c8-bf09-a72471fb5f99
