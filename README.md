@@ -15,3 +15,6 @@ First, go to the "Health Goals" screen. There, you'll need to fill in the short 
 
 ## Demo
 https://github.com/Valentin-SUDRES-EDU/React-Native-Project/assets/91461565/28fa30c4-6f4f-43c8-bf09-a72471fb5f99
+
+## Documentation
+[Doc Développement Mobile.pdf](https://github.com/Valentin-SUDRES-EDU/React-Native-Project/files/11818926/Doc.Developpement.Mobile.pdf)
